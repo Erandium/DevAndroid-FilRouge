@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.jdock.fil_rouge.R
+import com.jdock.fil_rouge.databinding.FragmentTaskListBinding
 import java.util.*
 
 class TaskListFragment : Fragment() {
@@ -19,23 +20,26 @@ class TaskListFragment : Fragment() {
         Task(id = "id_3", title = "Task 3")
     )
 
+    private lateinit var binding: FragmentTaskListBinding
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_task_list, container, false)
+        binding = FragmentTaskListBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
+        val recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(activity)
         val adapter = TaskListAdapter()
         recyclerView.adapter = adapter
         adapter.submitList(taskList.toList())
 
-        val button = view.findViewById<FloatingActionButton>(R.id.floatingActionButton1)
+        val button = binding.floatingActionButton1
         button.setOnClickListener {
             taskList.add(Task(id = UUID.randomUUID().toString(), title = "Task ${taskList.size + 1}"))
             adapter.submitList(taskList.toList())
