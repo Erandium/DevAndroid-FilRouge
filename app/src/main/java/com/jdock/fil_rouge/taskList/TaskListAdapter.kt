@@ -3,6 +3,7 @@ package com.jdock.fil_rouge.taskList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
@@ -11,6 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.jdock.fil_rouge.R
 
 class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(TaskDiffCallback()) {
+
+    var onClickEdit : (Task) -> Unit = {}
+    var onClickDelete: (Task) -> Unit = {}
 
     private class TaskDiffCallback : DiffUtil.ItemCallback<Task>() {
         override fun areItemsTheSame(oldItem: Task, newItem: Task): Boolean {
@@ -31,8 +35,20 @@ class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(TaskDi
             val descriptionView = itemView.findViewById<TextView>(R.id.task_description)
             descriptionView.text = task.description
 
+            val buttonEdit = itemView.findViewById<ImageButton>(R.id.edit_button)
+            buttonEdit.setOnClickListener {
+                onClickEdit(task)
+            }
+
+            val buttonDelete = itemView.findViewById<ImageButton>(R.id.delete_button)
+            buttonDelete.setOnClickListener {
+                onClickDelete(task)
+            }
+
+
         }
     }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_task, parent, false)

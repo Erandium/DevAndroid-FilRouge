@@ -1,18 +1,19 @@
 package com.jdock.fil_rouge.taskList
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.jdock.fil_rouge.R
 import com.jdock.fil_rouge.databinding.FragmentTaskListBinding
-import java.util.*
+import form.FormActivity
 
 class TaskListFragment : Fragment() {
+
+    private val adapter = TaskListAdapter()
 
     private val taskList = mutableListOf(
         Task(id = "id_1", title = "Task 1", description = "description 1"),
@@ -21,6 +22,15 @@ class TaskListFragment : Fragment() {
     )
 
     private lateinit var binding: FragmentTaskListBinding
+
+    private val formLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val task = result.data?.getSerializableExtra("task") as? Task
+        if (task != null)
+        {
+            taskList.add(task)
+            adapter.submitList(taskList.toList())
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,15 +45,29 @@ class TaskListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(activity)
-        val adapter = TaskListAdapter()
+
+
         recyclerView.adapter = adapter
         adapter.submitList(taskList.toList())
 
+        adapter.onClickEdit = {task ->
+            taskList.remove(task)
+            adapter.submitList(taskList.toList())
+            val intent = Intent(context, FormActivity::class.java)
+            intent.putExtra("task", task)
+            formLauncher.launch(intent)
+
+        }
+
+        adapter.onClickDelete = { task ->
+            taskList.remove(task)
+            adapter.submitList(taskList.toList())
+        }
+
         val button = binding.floatingActionButton1
         button.setOnClickListener {
-            taskList.add(Task(id = UUID.randomUUID().toString(), title = "Task ${taskList.size + 1}"))
-            adapter.submitList(taskList.toList())
-
+            val intent = Intent(context, FormActivity::class.java)
+            formLauncher.launch(intent)
         }
     }
 }
