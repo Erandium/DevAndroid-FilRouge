@@ -11,10 +11,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.jdock.fil_rouge.R
 
-class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(TaskDiffCallback()) {
-
-    var onClickEdit : (Task) -> Unit = {}
-    var onClickDelete: (Task) -> Unit = {}
+class TaskListAdapter(val listener: TaskListListener) : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(TaskDiffCallback()) {
 
     private class TaskDiffCallback : DiffUtil.ItemCallback<Task>() {
         override fun areItemsTheSame(oldItem: Task, newItem: Task): Boolean {
@@ -37,12 +34,12 @@ class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(TaskDi
 
             val buttonEdit = itemView.findViewById<ImageButton>(R.id.edit_button)
             buttonEdit.setOnClickListener {
-                onClickEdit(task)
+                listener.onClickEdit(task)
             }
 
             val buttonDelete = itemView.findViewById<ImageButton>(R.id.delete_button)
             buttonDelete.setOnClickListener {
-                onClickDelete(task)
+                listener.onClickDelete(task)
             }
 
 
