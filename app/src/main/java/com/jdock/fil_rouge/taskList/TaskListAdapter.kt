@@ -42,6 +42,11 @@ class TaskListAdapter(val listener: TaskListListener) : ListAdapter<Task, TaskLi
                 listener.onClickDelete(task)
             }
 
+            val buttonShare = itemView.findViewById<ImageButton>(R.id.share_button)
+            buttonShare.setOnClickListener {
+                listener.onClickShare(task)
+            }
+
 
         }
     }

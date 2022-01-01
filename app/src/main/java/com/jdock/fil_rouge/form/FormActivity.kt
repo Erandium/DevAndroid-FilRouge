@@ -1,4 +1,4 @@
-package form
+package com.jdock.fil_rouge.form
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +22,8 @@ class FormActivity : AppCompatActivity() {
         val descriptionText = findViewById<EditText>(R.id.form_description)
         val buttonCreate = findViewById<Button>(R.id.create_button)
 
+        titleText.hint = "Title"
+        descriptionText.hint = "Description"
 
         val task = intent.getSerializableExtra("task") as? Task
         val taskId = task?.id ?: UUID.randomUUID().toString()

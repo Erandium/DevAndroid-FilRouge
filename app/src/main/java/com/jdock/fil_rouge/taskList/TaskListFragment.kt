@@ -7,51 +7,60 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jdock.fil_rouge.databinding.FragmentTaskListBinding
-import form.FormActivity
+import com.jdock.fil_rouge.form.FormActivity
+import com.jdock.fil_rouge.network.TasksRepository
+import kotlinx.coroutines.launch
 
 class TaskListFragment : Fragment() {
-
-
-
-    private val taskList = mutableListOf(
-        Task(id = "id_1", title = "Task 1", description = "description 1"),
-        Task(id = "id_2", title = "Task 2"),
-        Task(id = "id_3", title = "Task 3")
-    )
 
     private lateinit var binding: FragmentTaskListBinding
 
     private lateinit var adapter : TaskListAdapter
 
+    private val tasksRepository = TasksRepository()
+
     private val formLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val task = result.data?.getSerializableExtra("task") as? Task
         if (task != null)
         {
-            taskList.add(task)
-            adapter.submitList(taskList.toList())
+            lifecycleScope.launch {
+                tasksRepository.createOrUpdate(task)
+                tasksRepository.refresh()
+            }
         }
     }
 
 
-
     private val adapterListener = object : TaskListListener {
         override fun onClickDelete(task: Task) {
-            taskList.remove(task)
-            adapter.submitList(taskList.toList())
+            lifecycleScope.launch {
+                tasksRepository.deleteTask(task)
+                tasksRepository.refresh()
+            }
         }
 
         override fun onClickEdit(task: Task) {
-            taskList.remove(task)
-            adapter.submitList(taskList.toList())
             val intent = Intent(context, FormActivity::class.java)
             intent.putExtra("task", task)
             formLauncher.launch(intent)
         }
 
+        override fun onClickShare(task: Task){
+            val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, "My task " + task.title + " : " + task.description)
+                type = "text/plain"
+            }
+            val shareIntent = Intent.createChooser(sendIntent, null)
+            startActivity(shareIntent)
+        }
 
     }
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,15 +77,27 @@ class TaskListFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(activity)
 
         adapter = TaskListAdapter(adapterListener)
-
         recyclerView.adapter = adapter
-        adapter.submitList(taskList.toList())
+        //adapter.submitList(taskList.toList())
 
 
         val button = binding.floatingActionButton1
         button.setOnClickListener {
             val intent = Intent(context, FormActivity::class.java)
             formLauncher.launch(intent)
+        }
+
+        lifecycleScope.launch { // on lance une coroutine car `collect` est `suspend`
+            tasksRepository.taskListFlow.collect { newList ->
+                adapter.submitList(newList)
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch {
+            tasksRepository.refresh() // on demande de rafraîchir les données sans attendre le retour directement
         }
     }
 }
