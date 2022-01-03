@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jdock.fil_rouge.databinding.FragmentTaskListBinding
@@ -20,26 +21,22 @@ class TaskListFragment : Fragment() {
 
     private lateinit var adapter : TaskListAdapter
 
-    private val tasksRepository = TasksRepository()
+    private val viewModel: TaskListViewModel by viewModels()
+
 
     private val formLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val task = result.data?.getSerializableExtra("task") as? Task
         if (task != null)
         {
-            lifecycleScope.launch {
-                tasksRepository.createOrUpdate(task)
-                tasksRepository.refresh()
-            }
+            viewModel.addOrEdit(task)
+            viewModel.refresh()
         }
     }
 
-
     private val adapterListener = object : TaskListListener {
         override fun onClickDelete(task: Task) {
-            lifecycleScope.launch {
-                tasksRepository.deleteTask(task)
-                tasksRepository.refresh()
-            }
+            viewModel.delete(task)
+            viewModel.refresh()
         }
 
         override fun onClickEdit(task: Task) {
@@ -78,7 +75,6 @@ class TaskListFragment : Fragment() {
 
         adapter = TaskListAdapter(adapterListener)
         recyclerView.adapter = adapter
-        //adapter.submitList(taskList.toList())
 
 
         val button = binding.floatingActionButton1
@@ -87,8 +83,8 @@ class TaskListFragment : Fragment() {
             formLauncher.launch(intent)
         }
 
-        lifecycleScope.launch { // on lance une coroutine car `collect` est `suspend`
-            tasksRepository.taskListFlow.collect { newList ->
+        lifecycleScope.launch {
+            viewModel.taskList.collect { newList ->
                 adapter.submitList(newList)
             }
         }
@@ -96,8 +92,6 @@ class TaskListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        lifecycleScope.launch {
-            tasksRepository.refresh() // on demande de rafraîchir les données sans attendre le retour directement
-        }
+        viewModel.refresh()
     }
 }

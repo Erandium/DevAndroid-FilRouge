@@ -8,7 +8,7 @@ import retrofit2.Retrofit
 
 object Api {
     private const val BASE_URL = "https://android-tasks-api.herokuapp.com/api/"
-    private const val TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1NzIsImV4cCI6MTY3MjU5ODc1OH0.4rgHrEhQQ5ezBO60DTXXU6eBqQE5edWMc0NNt_jE8_g"
+    private const val TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1NzIsImV4cCI6MTY3Mjc1NDQyNX0.xIBMWmIFcHysTu6aIzEF5YC05CZab6gx8mb_NmSx-EU"
 
     // client HTTP
     private val okHttpClient by lazy {
