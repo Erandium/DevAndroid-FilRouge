@@ -9,9 +9,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
+import androidx.core.content.edit
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import coil.transform.CircleCropTransformation
+import com.jdock.fil_rouge.R
+import com.jdock.fil_rouge.authentication.SHARED_PREF_TOKEN_KEY
 import com.jdock.fil_rouge.databinding.FragmentTaskListBinding
 import com.jdock.fil_rouge.form.FormActivity
 import com.jdock.fil_rouge.network.Api
@@ -40,7 +45,6 @@ class TaskListFragment : Fragment() {
     }
 
     private  val avatarLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        //TODO
     }
 
     private val adapterListener = object : TaskListListener {
@@ -103,6 +107,14 @@ class TaskListFragment : Fragment() {
             taskViewModel.taskList.collect { newList ->
                 adapter.submitList(newList)
             }
+        }
+
+        val lougoutButton = binding.logoutButton
+        lougoutButton.setOnClickListener{
+            PreferenceManager.getDefaultSharedPreferences(context).edit{
+                putString(SHARED_PREF_TOKEN_KEY,"")
+            }
+            findNavController().navigate(R.id.action_taskListFragment_to_authenticationFragment)
         }
     }
 

@@ -22,5 +22,4 @@ class UserInfoRepository {
         return if (response.isSuccessful) response.body() else null
     }
 
-
 }

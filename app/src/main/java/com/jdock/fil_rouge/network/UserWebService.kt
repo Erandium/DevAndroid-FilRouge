@@ -1,6 +1,9 @@
 package com.jdock.fil_rouge.network
 
 
+import com.jdock.fil_rouge.authentication.LoginForm
+import com.jdock.fil_rouge.authentication.LoginResponse
+import com.jdock.fil_rouge.authentication.SignUpForm
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
@@ -16,4 +19,9 @@ interface UserWebService {
     @PATCH("users")
     suspend fun update(@Body user: UserInfo): Response<UserInfo>
 
+    @POST("users/login")
+    suspend fun login(@Body user: LoginForm): Response<LoginResponse>
+
+    @POST("users/sign_up")
+    suspend fun signUp(@Body user: SignUpForm): Response<LoginResponse>
 }
