@@ -16,10 +16,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import coil.transform.CircleCropTransformation
 import com.jdock.fil_rouge.R
-import com.jdock.fil_rouge.authentication.SHARED_PREF_TOKEN_KEY
 import com.jdock.fil_rouge.databinding.FragmentTaskListBinding
 import com.jdock.fil_rouge.form.FormActivity
 import com.jdock.fil_rouge.network.Api
+import com.jdock.fil_rouge.network.SHARED_PREF_TOKEN_KEY
 import com.jdock.fil_rouge.user.UserInfoActivity
 import com.jdock.fil_rouge.user.UserInfoViewModel
 import kotlinx.coroutines.flow.collect
@@ -71,7 +71,14 @@ class TaskListFragment : Fragment() {
 
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val token = PreferenceManager.getDefaultSharedPreferences(Api.appContext).getString("auth_token_key", "")
+        if(token == "") {
+            findNavController().navigate(R.id.action_taskListFragment_to_authenticationFragment)
+        }
 
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
