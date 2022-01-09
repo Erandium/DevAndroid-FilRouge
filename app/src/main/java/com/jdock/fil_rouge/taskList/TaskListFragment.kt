@@ -10,9 +10,14 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import coil.load
+import coil.transform.CircleCropTransformation
 import com.jdock.fil_rouge.databinding.FragmentTaskListBinding
 import com.jdock.fil_rouge.form.FormActivity
-import com.jdock.fil_rouge.network.TasksRepository
+import com.jdock.fil_rouge.network.Api
+import com.jdock.fil_rouge.user.UserInfoActivity
+import com.jdock.fil_rouge.user.UserInfoViewModel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class TaskListFragment : Fragment() {
@@ -21,22 +26,27 @@ class TaskListFragment : Fragment() {
 
     private lateinit var adapter : TaskListAdapter
 
-    private val viewModel: TaskListViewModel by viewModels()
+    private val taskViewModel: TaskListViewModel by viewModels()
+    private val userViewModel: UserInfoViewModel by viewModels()
 
 
     private val formLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val task = result.data?.getSerializableExtra("task") as? Task
         if (task != null)
         {
-            viewModel.addOrEdit(task)
-            viewModel.refresh()
+            taskViewModel.addOrEdit(task)
+            taskViewModel.refresh()
         }
+    }
+
+    private  val avatarLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        //TODO
     }
 
     private val adapterListener = object : TaskListListener {
         override fun onClickDelete(task: Task) {
-            viewModel.delete(task)
-            viewModel.refresh()
+            taskViewModel.delete(task)
+            taskViewModel.refresh()
         }
 
         override fun onClickEdit(task: Task) {
@@ -77,14 +87,20 @@ class TaskListFragment : Fragment() {
         recyclerView.adapter = adapter
 
 
-        val button = binding.floatingActionButton1
+        val button = binding.addButton
         button.setOnClickListener {
             val intent = Intent(context, FormActivity::class.java)
             formLauncher.launch(intent)
         }
 
+        val avatar = binding.profileImage
+        avatar.setOnClickListener {
+            val intent = Intent(context, UserInfoActivity::class.java)
+            avatarLauncher.launch(intent)
+        }
+
         lifecycleScope.launch {
-            viewModel.taskList.collect { newList ->
+            taskViewModel.taskList.collect { newList ->
                 adapter.submitList(newList)
             }
         }
@@ -92,6 +108,20 @@ class TaskListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.refresh()
+        taskViewModel.refresh()
+        userViewModel.loadUser()
+
+        val userProfileTextView = binding.profileText
+        val userProfileAvatar = binding.profileImage
+
+
+        lifecycleScope.launch {
+            userViewModel.userInfo.collect { userInfo ->
+                userProfileTextView.text = "${userInfo?.firstName} \n ${userInfo?.lastName}"
+                userProfileAvatar.load(userInfo?.avatar) {
+                    transformations(CircleCropTransformation())
+                }
+            }
+        }
     }
 }
